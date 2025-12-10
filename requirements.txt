@@ -6,4 +6,4 @@ whitenoise>=6.5
 dj-database-url>=1.0
 psycopg2-binary>=2.9
 python-dotenv>=1.0
-yt-dlp>=2025.12.10
+yt-dlp>=2024.7.23
