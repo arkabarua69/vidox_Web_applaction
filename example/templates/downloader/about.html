@@ -1,0 +1,113 @@
+{% extends 'downloader/base.html' %}
+{% load static %}
+
+{% block title %}
+  About — VIDOX
+{% endblock %}
+
+{% block extra_head %}
+  <style></style>
+{% endblock %}
+
+{% block body %}
+  <main class="advanced-hero hero-section">
+    <div class="container">
+      <h1 class="hero-title display-4 fw-bold">Built for Speed. Designed for Users.</h1>
+      <p class="hero-lead">VIDOX is a modern, fast, and secure utility for downloading publicly available video and audio content. We prioritize performance, mobile usability, and an elegant user experience.</p>
+
+      <div class="section-panel reveal" data-reveal>
+        <h3 class="text-center">Core Features & Philosophy</h3>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <i class="bi bi-lightning-charge text-info"></i>
+            <h5>Optimized Performance</h5>
+            <p class="small-muted">Our engine is tuned for rapid fetching and minimal latency, ensuring you get high-quality content quickly.</p>
+          </div>
+
+          <div class="feature-card">
+            <i class="bi bi-music-note-beamed text-warning"></i>
+            <h5>High-Fidelity Audio</h5>
+            <p class="small-muted">Easily extract and convert video soundtracks to crystal-clear MP3 format, optimized for best clarity.</p>
+          </div>
+
+          <div class="feature-card">
+            <i class="bi bi-phone text-success"></i>
+            <h5>Cross-Platform Experience</h5>
+            <p class="small-muted">A beautiful and responsive UI that works seamlessly across desktops, tablets, and mobile devices.</p>
+          </div>
+
+          <div class="feature-card">
+            <i class="bi bi-shield-check text-primary"></i>
+            <h5>Legal Compliance</h5>
+            <p class="small-muted">We only interact with public, non-protected content and adhere strictly to all relevant platform guidelines.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-panel reveal" data-reveal>
+        <h3>Technical Excellence</h3>
+        <div class="tech-stack">
+          <span class="tech-pill">Python / Django</span>
+          <span class="tech-pill">yt-dlp (Core Downloader)</span>
+          <span class="tech-pill">FFmpeg (Media Processing)</span>
+          <span class="tech-pill">PostgreSQL</span>
+          <span class="tech-pill">Bootstrap 5 / SASS</span>
+          <span class="tech-pill">Asynchronous Ready Architecture</span>
+        </div>
+      </div>
+
+      <div class="section-panel reveal" data-reveal>
+        <div class="cta-panel d-md-flex justify-content-between align-items-center text-center text-md-start">
+          <div class="mb-3 mb-md-0">
+            <strong>Interested in Collaboration or Have Feedback?</strong>
+            <div class="small-muted mt-1">We are always open to suggestions and potential partnerships to expand VIDOX.</div>
+          </div>
+          <a href="{% url 'downloader:contact' %}" class="btn btn-gradient-main btn-lg">Get in Touch</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Reveal on scroll + Stats counter animation (Kept the original JS for functionality)
+    ;(function () {
+      const reveals = [...document.querySelectorAll('[data-reveal]')]
+      const nums = [...document.querySelectorAll('.num')]
+      function reveal() {
+        const h = window.innerHeight - 80
+        reveals.forEach((el) => {
+          if (el.getBoundingClientRect().top <= h) el.classList.add('visible')
+        })
+      }
+      function counter() {
+        nums.forEach((el) => {
+          if (el.dataset.animated) return
+          if (el.getBoundingClientRect().top <= window.innerHeight - 60) {
+            el.dataset.animated = '1'
+            const target = parseInt(el.dataset.target)
+            let start = 0 // Calculate step to reach target in ~40 frames (smooth)
+            const step_size = Math.ceil(target / 40)
+            const step = () => {
+              start += step_size
+              if (start >= target) {
+                el.textContent = target.toLocaleString() // Added comma separator
+                return
+              }
+              el.textContent = start.toLocaleString()
+              requestAnimationFrame(step)
+            }
+            requestAnimationFrame(step)
+          }
+        })
+      }
+      window.addEventListener('scroll', () => {
+        reveal()
+        counter()
+      })
+      window.addEventListener('load', () => {
+        reveal()
+        counter()
+      })
+    })()
+  </script>
+{% endblock %}

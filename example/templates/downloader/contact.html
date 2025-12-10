@@ -1,0 +1,152 @@
+{% extends 'downloader/base.html' %}
+
+{% block title %}
+  Contact — VIDOX
+{% endblock %}
+{% block body %}
+  <div class="container" style="max-width: 900px; padding-top: 7rem; padding-bottom: 3rem;">
+    <!-- Page Header -->
+    <div class="text-center mb-5">
+      <h1 class="fw-bold" style="background: linear-gradient(120deg, #00f5d4, #fee440, #f15bb5);
+               -webkit-background-clip: text; color: transparent;">Contact Us</h1>
+      <p class="text-light opacity-75">Have questions or suggestions? Fill out the form below — we’d love to hear from you!</p>
+    </div>
+
+    <!-- Alerts -->
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} text-center fw-semibold rounded-3">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+
+    <!-- Contact Wrapper -->
+    <div class="contact-wrapper">
+      <!-- Left Info Panel -->
+      <div class="info-panel">
+        <h4 class="fw-bold text-light mb-3">Get in Touch</h4>
+
+        <p class="small text-light opacity-75">You can contact us anytime. Our support team will respond as quickly as possible.</p>
+
+        <div class="contact-info-item">
+          <i class="bi bi-envelope-open-fill"></i>
+          gunjonarka@gmail.com
+        </div>
+
+        <div class="contact-info-item">
+          <i class="bi bi-discord"></i>
+          discord.gg/yNRtTs468Q
+        </div>
+
+        <div class="contact-info-item">
+          <i class="bi bi-instagram"></i>
+          @mac_gunjon
+        </div>
+
+        <div class="contact-info-item">
+          <i class="bi bi-facebook"></i>
+          facebook.com/mac_gunjon_django
+        </div>
+
+        <hr class="border-secondary" />
+
+        <p class="small text-light">
+          <strong>Office Hours:</strong><br />
+          Saturday – Thursday<br />
+          10:00 AM – 8:00 PM (BDT)
+        </p>
+      </div>
+
+      <!-- Right Form Panel -->
+      <div class="form-panel">
+        <form action="" method="POST" class="w-100">
+          {% csrf_token %}
+
+          <!-- Name -->
+          <div class="mb-3">
+            <label class="form-label text-light fw-semibold">Your Name</label>
+            {{ form.name }}
+          </div>
+
+          <!-- Email -->
+          <div class="mb-3">
+            <label class="form-label text-light fw-semibold">Your Email</label>
+            {{ form.email }}
+          </div>
+
+          <!-- Message -->
+          <div class="mb-3">
+            <label class="form-label text-light fw-semibold">Your Message</label>
+            {{ form.message }}
+          </div>
+
+          <!-- Submit -->
+          <button class="btn btn-gradient-main fw-bold py-2 w-100" type="submit"><i class="bi bi-send-fill me-1"></i> Send Message</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .contact-wrapper {
+      display: flex;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+    
+    .info-panel {
+      flex: 1;
+      min-width: 260px;
+      padding: 1.6rem;
+      border-radius: 16px;
+      backdrop-filter: blur(12px);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    
+    .form-panel {
+      flex: 2;
+      min-width: 300px;
+      padding: 1.6rem;
+      border-radius: 16px;
+      backdrop-filter: blur(12px);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    
+    .contact-info-item {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 0.95rem;
+      color: #e0e0e0;
+      margin: 0.45rem 0;
+    }
+    
+    .contact-info-item i {
+      font-size: 1.2rem;
+      background: linear-gradient(135deg, #00bbf9, #f15bb5);
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+    
+    /* Form Fields */
+    input,
+    textarea {
+      background: rgba(255, 255, 255, 0.06) !important;
+      color: #fff !important;
+      border: 1px solid rgba(255, 255, 255, 0.15) !important;
+      border-radius: 12px !important;
+    }
+    
+    textarea {
+      height: 120px !important;
+      resize: none;
+    }
+    
+    @media (max-width: 768px) {
+      .contact-wrapper {
+        flex-direction: column;
+      }
+    }
+  </style>
+{% endblock %}

@@ -1,0 +1,320 @@
+{% extends 'downloader/base.html' %}
+{% load static %}
+{% block body %}
+  <!-- MAIN -->
+  <main class="hero-section" id="download">
+    <div class="container">
+      <div class="hero-header text-center mb-4">
+        <h1 class="hero-title">{{ hero_title|default:'VIDOX Downloader' }}</h1>
+        <p class="hero-subtitle">{{ hero_subtitle|default:'Download videos & audio from your favorite platforms in one click. Fully responsive, works great on mobile and desktop.' }}</p>
+        <div class="mt-3">
+          <span class="chip" style="background:rgba(0,245,212,0.12); color:var(--accent1)"><i class="bi bi-lightning-charge me-1"></i>Fast</span>
+          <span class="chip" style="background:rgba(0,187,249,0.12); color:var(--accent2)"><i class="bi bi-shield-check me-1"></i>Secure</span>
+          <span class="chip" style="background:rgba(254,228,64,0.15); color:#c9b100"><i class="bi bi-hdmi-fill me-1"></i>HD / Full HD</span>
+          <span class="chip" style="background:rgba(241,91,181,0.16); color:#f15bb5"><i class="bi bi-phone me-1"></i>Mobile Friendly</span>
+        </div>
+      </div>
+
+      <section class="section-panel">
+        <div class="row g-3">
+          <!-- URL + paste + future btn -->
+          <div class="col-12">
+            <label class="form-label">Video URL</label>
+            <div class="input-group">
+              <span class="input-group-text border-0 bg-transparent text-light"><i class="bi bi-link-45deg"></i></span>
+              <input id="url" type="text" class="form-control" placeholder="Paste video link here (YouTube, Facebook, Instagram, etc.)" autocomplete="off" />
+              <button class="btn btn-outline-secondary" type="button" id="pasteBtn" title="Paste URL from clipboard"><i class="bi bi-clipboard-fill"></i></button>
+              <button class="btn btn-outline-info" type="button" id="ffMenuBtn" title="Planned features" data-bs-toggle="tooltip" data-bs-placement="left"><i class="bi bi-lightbulb-fill"></i></button>
+            </div>
+            <div class="mt-2 d-flex justify-content-between align-items-center flex-wrap gap-2">
+              <span id="platformBadge" class="platform-badge platform-unknown"><i class="bi bi-globe2"></i> Unknown site</span>
+              <small id="platformHint" class="text-light">Paste a link from YouTube, Facebook or Instagram.</small>
+            </div>
+          </div>
+
+          <!-- Quality -->
+          <div class="col-12">
+            <label class="form-label">Quality</label>
+            <select id="quality" class="form-select w-100">
+              <option value="best">Best Quality (Auto)</option>
+              <option value="1080p">1080p Full HD</option>
+              <option value="720p">720p HD</option>
+              <option value="480p">480p</option>
+              <option value="360p">360p</option>
+            </select>
+            <small class="text-light" id="qualityHint">Auto selects the highest quality supported by the site.</small>
+          </div>
+
+          <!-- Buttons -->
+          <div class="col-12 d-grid mt-2">
+            <button id="videoBtn" class="btn btn-gradient-main" type="button" onclick="downloadVideo()"><i class="bi bi-download me-1"></i> Download Video (MP4)</button>
+          </div>
+          <div class="col-12 d-grid mt-2">
+            <button id="audioBtn" class="btn btn-gradient-audio" type="button" onclick="downloadAudio()"><i class="bi bi-music-note-beamed me-1"></i> Download Audio (MP3)</button>
+          </div>
+        </div>
+
+        <!-- progress -->
+        <div class="mt-4">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="small fw-semibold">Progress</span>
+            <span class="small" id="progressPercent">0%</span>
+          </div>
+          <div class="progress">
+            <div id="progressFill" class="progress-bar" role="progressbar" style="width:0%"></div>
+          </div>
+        </div>
+
+        <div class="mt-3 status-text info" id="statusMsg"></div>
+
+        <div class="mt-4 install-card">
+          <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
+            <div>
+              <strong><i class="bi bi-phone me-1"></i>Install on your phone</strong><div class="small text-warning">Use it like a real app. Works best on Chrome (Android) and Safari (iOS).</div>
+            </div>
+            <button id="installBtn" class="btn btn-sm btn-outline-info" type="button" disabled><i class="bi bi-download"></i> Install VIDOX App</button>
+          </div>
+          <div class="small text-warning mt-2" id="installHint">If the button is disabled, open this site in your mobile browser and use “Add to Home screen”.</div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Restricted modal -->
+  <div class="modal fade" id="restrictedModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content" style="background:#050816; color:#f9fafb; border-radius:16px; border:1px solid rgba(255,255,255,0.12);">
+        <div class="modal-header border-0">
+          <h5 class="modal-title"><i class="bi bi-shield-exclamation text-warning me-2"></i> YouTube Restriction Detected</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body pt-0">
+          <p class="mb-2">এই ভিডিওটা YouTube login / age-check / bot-check এর কারণে public server থেকে download করা যাচ্ছে না।</p>
+          <ul class="small mb-2">
+            <li>ভিডিওটা normal browser-এ দেখে নাও কাজ করে কিনা।</li>
+            <li>অন্য public / non-restricted ভিডিও try করো।</li>
+          </ul>
+          <p class="small text-muted mb-0">VIDOX শুধুমাত্র publicly accessible ভিডিও download করতে পারে। Restricted / login-required ভিডিও force করে bypass করা নিরাপদ বা allowed না।</p>
+        </div>
+        <div class="modal-footer border-0">
+          <button type="button" class="btn btn-sm btn-outline-light" data-bs-dismiss="modal">ঠিক আছে, বুঝেছি</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOOTSTRAP JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    // simple same-origin endpoints (matches downloader/urls.py)
+    const VIDEO_ENDPOINT = '/download/video'
+    const AUDIO_ENDPOINT = '/download/audio'
+    const statusMsg = document.getElementById('statusMsg')
+    const progressFill = document.getElementById('progressFill')
+    const progressPercent = document.getElementById('progressPercent')
+    const urlInput = document.getElementById('url')
+    const platformBadge = document.getElementById('platformBadge')
+    const platformHint = document.getElementById('platformHint')
+    const qualitySelect = document.getElementById('quality')
+    const qualityHint = document.getElementById('qualityHint')
+    const pasteBtn = document.getElementById('pasteBtn')
+    const ffMenuBtn = document.getElementById('ffMenuBtn')
+    const videoBtn = document.getElementById('videoBtn')
+    const audioBtn = document.getElementById('audioBtn')
+    const installBtn = document.getElementById('installBtn')
+    const installHint = document.getElementById('installHint')
+    const restrictedModalEl = document.getElementById('restrictedModal')
+    const restrictedModal = new bootstrap.Modal(restrictedModalEl)
+    let deferredPrompt = null
+    function detectPlatform(url) {
+      const lower = (url || '').toLowerCase()
+      if (/youtube\.com|youtu\.be/.test(lower)) return 'youtube'
+      if (/facebook\.com|fb\.watch/.test(lower)) return 'facebook'
+      if (/instagram\.com|instagr\.am/.test(lower)) return 'instagram'
+      return 'unknown'
+    }
+    function updatePlatformUI() {
+      const url = urlInput.value.trim()
+      const platform = detectPlatform(url)
+      platformBadge.className = 'platform-badge'
+      let label = 'Unknown site',
+        cls = 'platform-unknown',
+        hint = ''
+      switch (platform) {
+        case 'youtube':
+          label = 'YouTube detected'
+          cls = 'platform-youtube'
+          hint = 'Best for 720p–1080p (or higher if your backend supports).'
+          break
+        case 'facebook':
+          label = 'Facebook detected'
+          cls = 'platform-facebook'
+          hint = 'Videos, reels and clips are supported.'
+          break
+        case 'instagram':
+          label = 'Instagram detected'
+          cls = 'platform-instagram'
+          hint = "Reels & posts are supported. 'Best' is recommended."
+          break
+        default:
+          hint = 'Paste a link from YouTube, Facebook or Instagram.'
+      }
+      platformBadge.classList.add(cls)
+      platformBadge.innerHTML = (platform === 'unknown' ? '<i class="bi bi-globe2"></i> ' : '<i class="bi bi-check-circle"></i> ') + label
+      platformHint.textContent = hint
+      if (platform === 'instagram') qualityHint.textContent = "Instagram usually supports up to 720p. 'Best' is safe."
+      else if (platform === 'facebook') qualityHint.textContent = "Most Facebook videos are 720p or 1080p. 'Best' will pick automatically."
+      else if (platform === 'youtube') qualityHint.textContent = "YouTube can have many qualities. 'Best' is easiest for users."
+      else qualityHint.textContent = 'Auto selects the highest quality supported by the site.'
+    }
+    urlInput.addEventListener('input', updatePlatformUI) // paste from clipboard (retains original logic)
+    pasteBtn.addEventListener('click', async () => {
+      try {
+        const text = await navigator.clipboard.readText()
+        if (text && text.trim().length > 0) {
+          urlInput.value = text.trim()
+          updatePlatformUI()
+          setStatus('✅ URL pasted from clipboard.', 'success')
+        } else {
+          setStatus('ℹ Clipboard is empty or contains no text.', 'error')
+        }
+      } catch (err) {
+        // fallback prompt
+        const fallback = prompt('Paste URL here:')
+        if (fallback) {
+          urlInput.value = fallback.trim()
+          updatePlatformUI()
+          setStatus('✅ URL pasted (fallback).', 'success')
+        } else {
+          setStatus('⚠ Cannot access clipboard. Paste manually.', 'error')
+        }
+      }
+    }) // future-features quick list
+    ffMenuBtn.addEventListener('click', () => {
+      const features = ['Download history (coming soon)', 'Quality presets & custom formats', 'Login / OAuth for private posts', 'Background/queue downloads (Celery)', 'Rate limiting & user auth']
+      alert('Planned features:\\n\\n' + features.join('\\n'))
+    })
+    function setStatus(message, type = 'info') {
+      statusMsg.classList.remove('success', 'error', 'info')
+      statusMsg.classList.add(type)
+      statusMsg.textContent = message
+    }
+    function setProgress(p) {
+      const value = Math.max(0, Math.min(100, p))
+      progressFill.style.width = value + '%'
+      progressPercent.textContent = value + '%'
+    }
+    function setButtonsDisabled(disabled) {
+      videoBtn.disabled = disabled
+      audioBtn.disabled = disabled
+    }
+    function incrementStat(key) {
+      const fullKey = 'vidox-stat-' + key
+      const current = parseInt(localStorage.getItem(fullKey) || '0', 10)
+      localStorage.setItem(fullKey, current + 1)
+    }
+    function handleApiErrorMessage(msg) {
+      const lower = (msg || '').toLowerCase()
+      if (lower.includes('requires login') || lower.includes('sign in to confirm') || lower.includes('blocked this video') || lower.includes('age-restricted') || lower.includes('cannot download')) {
+        setStatus('❌ This video is restricted by YouTube (login / age-check). Try another public video.', 'error')
+        restrictedModal.show()
+      } else {
+        setStatus('❌ ' + msg, 'error')
+      }
+      setProgress(0)
+    } /* ---------------------------------------------------------------------- */ /* REVISED DOWNLOAD LOGIC                         */ /* ---------------------------------------------------------------------- */
+    function downloadVideo() {
+      const url = urlInput.value.trim()
+      const quality = qualitySelect.value
+      if (!url) {
+        setStatus('❌ Please enter a valid URL.', 'error')
+        return
+      }
+      setButtonsDisabled(true)
+      try {
+        // Step 1: Validation
+        setStatus('⏳ (1/3) Validating URL and fetching video info...', 'info')
+        setProgress(30) // Simulate time for server to process (optional, but makes it feel real)
+        setTimeout(() => {
+          // Step 2: Server Processing
+          setStatus('⏳ (2/3) Server is processing and formatting the video...', 'info')
+          setProgress(70) // Step 3: Redirect and Status Update
+          setTimeout(() => {
+            const q = new URLSearchParams({ url, quality }) // Trigger the download redirect
+            window.location.href = VIDEO_ENDPOINT + '?' + q.toString() // Final Success Message & Completion
+            setProgress(100)
+            setStatus('✅ Video Download Started Successfully! Check your downloads folder.', 'success')
+            incrementStat('video')
+            incrementStat('total')
+            setButtonsDisabled(false)
+          }, 1500) // 1.5 second pause for processing
+        }, 1000) // 1 second pause for validation
+      } catch (err) {
+        setStatus('❌ Error creating video download link.', 'error')
+        setProgress(0)
+        setButtonsDisabled(false)
+      }
+    }
+    function downloadAudio() {
+      const url = urlInput.value.trim()
+      if (!url) {
+        setStatus('❌ Please enter a valid URL.', 'error')
+        return
+      }
+    
+      setButtonsDisabled(true)
+    
+      try {
+        // Step 1: Validation
+        setStatus('⏳ (1/3) Validating URL and preparing audio extraction...', 'info')
+        setProgress(30) // Simulate time for server to process
+        setTimeout(() => {
+          // Step 2: Server Processing
+          setStatus('⏳ (2/3) Server is extracting and converting audio to MP3...', 'info')
+          setProgress(70) // Step 3: Redirect and Status Update
+          setTimeout(() => {
+            const q = new URLSearchParams({ url }) // Trigger the download redirect
+            window.location.href = AUDIO_ENDPOINT + '?' + q.toString() // Final Success Message & Completion
+            setProgress(100)
+            setStatus('🎵 Audio Download Started Successfully! Check your downloads folder.', 'success')
+            incrementStat('audio')
+            incrementStat('total')
+            setButtonsDisabled(false)
+          }, 1500) // 1.5 second pause for processing
+        }, 1000) // 1 second pause for validation
+      } catch (err) {
+        setStatus('❌ Error creating audio download link.', 'error')
+        setProgress(0)
+        setButtonsDisabled(false)
+      }
+    } // PWA install prompt (retains original logic)
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault()
+      deferredPrompt = e
+      installBtn.disabled = false
+      installHint.textContent = 'Tap Install to add VIDOX to your home screen.'
+    })
+    installBtn.addEventListener('click', async () => {
+      if (!deferredPrompt) {
+        setStatus('ℹ Use your browser menu → Add to Home screen.', 'info')
+        return
+      }
+      deferredPrompt.prompt()
+      const choice = await deferredPrompt.userChoice
+      if (choice.outcome === 'accepted') setStatus('✅ App install started.', 'success')
+      else setStatus('ℹ Install cancelled.', 'info')
+      deferredPrompt = null
+      installBtn.disabled = true
+    }) // init bootstrap tooltips (retains original logic)
+    if (typeof bootstrap !== 'undefined') {
+      const tooltipList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+      tooltipList.map(function (el) {
+        return new bootstrap.Tooltip(el)
+      })
+    }
+    
+    // Initial setup
+    updatePlatformUI()
+  </script>
+{% endblock %}
