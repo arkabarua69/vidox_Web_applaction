@@ -1,3 +1,4 @@
+# downloader/views.py
 import os
 import tempfile
 import shutil
@@ -8,7 +9,7 @@ from django.http import FileResponse, HttpResponse, HttpResponseBadRequest
 from django.urls import reverse
 from django.contrib import messages
 
-# Safe import for ContactForm (optional)
+# Optional import for contact form
 try:
     from .forms import ContactForm
 
@@ -16,7 +17,7 @@ try:
 except ImportError:
     FORMS_AVAILABLE = False
 
-# Safe import for yt_dlp
+# yt_dlp import
 try:
     from yt_dlp import YoutubeDL
 
@@ -29,7 +30,10 @@ def index_view(request):
     return render(request, "downloader/index.html")
 
 
-def _download_with_ytdlp(url, opts_extra=None):
+def _download_with_ytdlp(url, opts_extra=None, cookies_path=None):
+    """
+    Core function to download video/audio using yt_dlp
+    """
     if not YTDLP_AVAILABLE:
         raise Exception("yt_dlp module is not available in this environment.")
 
@@ -45,13 +49,20 @@ def _download_with_ytdlp(url, opts_extra=None):
             "writethumbnail": False,
             "writesubtitles": False,
         }
+
         if opts_extra:
             ydl_opts.update(opts_extra)
+
+        # Optional cookies for age-restricted videos
+        if cookies_path:
+            ydl_opts["cookiefile"] = cookies_path
 
         with YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=True)
             filepath = ydl.prepare_filename(info)
+
         return tmpdir, filepath, info
+
     except Exception as e:
         try:
             shutil.rmtree(tmpdir)
@@ -61,12 +72,16 @@ def _download_with_ytdlp(url, opts_extra=None):
 
 
 def download_video(request):
+    """
+    Download video view
+    """
     url = request.GET.get("url") or request.POST.get("url")
     quality = request.GET.get("quality") or request.POST.get("quality") or "best"
 
     if not url:
         return HttpResponseBadRequest("Missing 'url' parameter.")
 
+    # Prevent SSRF / local file access
     lower = url.lower()
     if url.startswith("file://") or "127.0.0.1" in lower or "localhost" in lower:
         return HttpResponseBadRequest("Invalid URL.")
@@ -83,8 +98,14 @@ def download_video(request):
     else:
         extra["format"] = "best"
 
+    # Optional: path to cookies.txt for restricted videos
+    cookies_path = None
+    # cookies_path = "/path/to/cookies.txt"  # Uncomment if needed
+
     try:
-        tmpdir, filepath, info = _download_with_ytdlp(url, opts_extra=extra)
+        tmpdir, filepath, info = _download_with_ytdlp(
+            url, opts_extra=extra, cookies_path=cookies_path
+        )
     except Exception as e:
         return HttpResponse(f"Error downloading video: {e}", status=400)
 
@@ -112,6 +133,9 @@ def download_video(request):
 
 
 def download_audio(request):
+    """
+    Download audio view
+    """
     url = request.GET.get("url") or request.POST.get("url")
     if not url:
         return HttpResponseBadRequest("Missing 'url' parameter.")
@@ -127,8 +151,12 @@ def download_audio(request):
         ],
     }
 
+    cookies_path = None  # Optional: path to cookies.txt
+
     try:
-        tmpdir, filepath, info = _download_with_ytdlp(url, opts_extra=extra)
+        tmpdir, filepath, info = _download_with_ytdlp(
+            url, opts_extra=extra, cookies_path=cookies_path
+        )
     except Exception as e:
         return HttpResponse(f"Error downloading audio: {e}", status=400)
 
